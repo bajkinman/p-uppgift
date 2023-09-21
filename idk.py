@@ -103,7 +103,27 @@ while True:
 """
 
 
-def randomwalk(startx,starty,board,knight):
+def menu():
+    print("hello blablabla")
+    print("Enter 1 to compute a random walk")
+    print("Enter 2 to input your own walk")
+    print("Enter 3 to compute a walk that visits every square")
+    validChoice = False
+    while not validChoice:
+        choice = input("Choose something: ")
+        if choice in ["1","2","3"]:
+            break
+        else:
+            print("Invalid input, try again")
+    if choice == "1":
+        randomWalk()
+    elif choice == "2":
+        inputWalk()
+    elif choice == "3":
+        completeWalk()
+
+
+def randomWalk(startx,starty,board,knight):
     numberofmoves = 0
     for i in range(100):
         legalmoves = knight.legalmoves()
@@ -114,12 +134,29 @@ def randomwalk(startx,starty,board,knight):
     
     board.printBoard()
 
+def inputWalk():
+    print("-"*40)
+    print("Input your own walk and have it shown on the board.")
+    print("Enter the walk in the format of the squares in the order that the knight visits them")
+    validinput = False
+    while not validinput:
+        numberofsquares = input("Enter the number of squares in your walk: ")
+        if numberofmoves.isint():
+            if 1 <= int(numberofsquares) <= 64:
+                validinput = True
+            elif int(numberofsquares) == 0:
+                print("Your walk is empty, that's not very good")
+            elif int(numberofsquares) > 64:
+                print("There aren't that many squares on a chessboard")
+        else:
+            print("Invalid input, try again or press q to quit back to the menu")
 
-# a friend told me that this works, apparently the algorithm also has a name
+
+# a friend told me that this algorithm exists, apparently it has a name
 # the alg is just that at each point, you look at all possible moves, and for those resulting
 # squaers, the number of available moves. If you choose to move to the square with the minimum
 # number of next moves available, then you will never corner yourself apparently
-def knightPath(startx,starty,board,knight):
+def completeWalk(startx,starty,board,knight):
     for i in range(63):
         moves = knight.availableMoves(board.visited)
         minimumMoves = 9
@@ -135,8 +172,8 @@ def knightPath(startx,starty,board,knight):
 
     board.printBoard()
 
-knightPath(knight.xpos,knight.ypos,board,knight)
+#completeWalk(knight.xpos,knight.ypos,board,knight)
 
 
-#randomwalk(knight.xpos,knight.ypos,board,knight)
+#randomWalk(knight.xpos,knight.ypos,board,knight)
 
