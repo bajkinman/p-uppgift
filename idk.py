@@ -1,14 +1,12 @@
-# want a class: knight that has a method move(dir) which updates the pos of the
-# knight which i guess is another method that just returns the current position of the knight.
 # idk how classes work
 
-
-import random #ig, idk why really
+import random 
 
 
 class Knight:
-    def __init__(self, initialpos):
-        self.pos = initialpos
+    def __init__(self, initial_x,initial_y):
+        self.xpos = initial_x
+        self.ypos = initial_y
 
     def legalmoves(self):
         legal = set()
@@ -23,7 +21,7 @@ class Knight:
 
             x,y = int(2**(1-e)*(-1)**ex),int(2**e*(-1)**ey)
             
-            if 0 <= self.pos[0]+x <= 7 and 0 <= self.pos[1]+y <= 7:
+            if 0 <= self.xpos+x <= 7 and 0 <= self.ypos+y <= 7:
                 legal.add(i)
         return legal
 
@@ -41,9 +39,12 @@ class Knight:
             e = 1
 
         x,y = int(2**(1-e)*(-1)**ex),int(2**e*(-1)**ey)
-        print("x,y",x,y)
-        self.pos[0] += x
-        self.pos[1] += y
+        if board.visited[self.xpos+x][self.ypos+y]:
+            print("already visited, try again")
+            return
+        self.xpos += x
+        self.ypos += y
+        board.updateKnightPos(self.xpos,self.ypos)
 
 
 # maybe have a method named validmoves that returns the directions to which the knight legally can jump.
@@ -51,29 +52,45 @@ class Knight:
 
 class Board:
     def __init__(self):
-        self.rows = [["0" for i in range(8)] for i in range(8)]
-        
+        self.squares = [["0" for _ in range(8)] for _ in range(8)]
+        self.knightx = -1
+        self.knighty = -1
+        self.visited = [[False for _ in range(8)] for _ in range(8)]
+
+    def setInitialKnightPos(self,x,y):
+        self.knightx = x
+        self.knighty = y
+        self.visited[x][y] = True
 
     def wipe(self):
-        for row in self.rows:
+        for row in self.squares:
             row = [0]*8
 
     def printBoard(self):
         print("-"*41)
         print("|   "+"-"*33+"   |")
         for i in range(8):
-            print("|{}  ".format(i)+"| "+" | ".join(self.rows[i])+" |   |")
+            print("|{}  ".format(i)+"| "+" | ".join(self.squares[i])+" |   |")
             print("|   "+"-"*33+"   |")
         print("|     A   B   C   D   E   F   G   H     |")
         print("-"*41)
 
-# generate matrix to store the board. Will record the visited positions later.
+    def updateKnightPos(self,newx, newy):
+        self.squares[self.knightx][self.knighty] = "."
+        self.knightx = newx
+        self.knighty = newy
+        self.squares[self.knightx][self.knighty] = "N"
+        self.visited[self.knightx][self.knighty] = True
+
+# generate matrix to store the board.
 
 board = Board()
 
 # testing move stuff
-knight = Knight([0,0])
-print("starting pos",knight.pos)
+initx,inity = map(int,input("Place a knight: ").split())
+knight = Knight(initx,inity)
+board.setInitialKnightPos(initx,inity)
+print("starting pos:",knight.xpos,knight.ypos)
 while True:
     print("legal moves:", knight.legalmoves())
     inp = input("Choose a direction for a move ")
@@ -81,5 +98,5 @@ while True:
         break
     inp = int(inp)
     knight.move(inp)
-    print("new position:",knight.pos)
+    print("new position:",knight.xpos,knight.ypos)
 
