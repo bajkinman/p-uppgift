@@ -1,58 +1,41 @@
-# idk how classes work
-
 import random 
 
-
 class Knight:
-    def __init__(self, initial_x,initial_y):
-        self.xpos = initial_x
-        self.ypos = initial_y
+    def __init__(self,initialpos):
+        self.xpos = initialpos[0]
+        self.ypos = initialpos[1]
 
     def legalmoves(self):
         legal = set()
-        for i in range(8):
-            ex = ey = e = 0
-            if i in {2,3,4,5}:
-                ex = 1
-            if i in {4,5,6,7}:
-                ey = 1
-            if i in {1,2,5,6}:
-                e = 1
-
-            x,y = int(2**(1-e)*(-1)**ex),int(2**e*(-1)**ey)
-            
+        moves = [(2,1),(1,2),(-1,2),(-2,1),(-2,-1),(-1,-2),(1,-2),(2,-1)]
+        for x,y in moves:
             if 0 <= self.xpos+x <= 7 and 0 <= self.ypos+y <= 7:
-                legal.add(i)
+                legal.add((self.xpos+x,self.ypos+y))
         return legal
 
-    def move(self,direction):
-        if direction not in self.legalmoves():
+    def availableMoves(self, visitedList):
+        available = set()
+        for x,y in self.legalmoves():
+            if not visitedList[y][x]:
+                available.add((x,y))
+        return available
+
+    def move(self,square,movenumber):
+        if square not in self.legalmoves():
             print("you are bad")
             return
-        
-        ex = ey = e = 0
-        if direction in {2,3,4,5}:
-            ex = 1
-        if direction in {4,5,6,7}:
-            ey = 1
-        if direction in {1,2,5,6}:
-            e = 1
 
-        x,y = int(2**(1-e)*(-1)**ex),int(2**e*(-1)**ey)
-        if board.visited[self.xpos+x][self.ypos+y]:
+        if board.visited[square[1]][square[0]]:
             print("already visited, try again")
             return
-        self.xpos += x
-        self.ypos += y
-        board.updateKnightPos(self.xpos,self.ypos)
+        self.xpos = square[0]
+        self.ypos = square[1]
+        board.updateKnightPos(self.xpos,self.ypos,movenumber)
 
-
-# maybe have a method named validmoves that returns the directions to which the knight legally can jump.
-# think that might be quite nice actually, then i don't have to check all of this bs in the move method
 
 class Board:
     def __init__(self):
-        self.squares = [["0" for _ in range(8)] for _ in range(8)]
+        self.squares = [["." for _ in range(8)] for _ in range(8)]
         self.knightx = -1
         self.knighty = -1
         self.visited = [[False for _ in range(8)] for _ in range(8)]
@@ -60,7 +43,8 @@ class Board:
     def setInitialKnightPos(self,x,y):
         self.knightx = x
         self.knighty = y
-        self.visited[x][y] = True
+        self.squares[y][x] = "N"
+        self.visited[y][x] = True
 
     def wipe(self):
         for row in self.squares:
@@ -69,28 +53,45 @@ class Board:
     def printBoard(self):
         print("-"*41)
         print("|   "+"-"*33+"   |")
-        for i in range(8):
-            print("|{}  ".format(i)+"| "+" | ".join(self.squares[i])+" |   |")
+        for i in range(7,-1,-1):
+            print(f"|{i+1}  ",end="")
+            for j in range(8):
+                print("|"+" "*(2-len(self.squares[i][j]))+self.squares[i][j]+" ",end="")
+            print("|   |")
             print("|   "+"-"*33+"   |")
         print("|     A   B   C   D   E   F   G   H     |")
         print("-"*41)
 
-    def updateKnightPos(self,newx, newy):
-        self.squares[self.knightx][self.knighty] = "."
+    def updateKnightPos(self, newx, newy, movenumber):
+        self.squares[self.knighty][self.knightx] = str(movenumber)
         self.knightx = newx
         self.knighty = newy
-        self.squares[self.knightx][self.knighty] = "N"
-        self.visited[self.knightx][self.knighty] = True
+        self.squares[self.knighty][self.knightx] = "N"
+        self.visited[self.knighty][self.knightx] = True
 
 # generate matrix to store the board.
 
 board = Board()
 
-# testing move stuff
-initx,inity = map(int,input("Place a knight: ").split())
-knight = Knight(initx,inity)
+column_map = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7 }
+valid_inp = False
+while not valid_inp:
+    inp = input("Place the knight on some square (eg. a1): ")
+    if len(inp) != 2 or inp[0] not in ['a','b','c','d','e','f','g','h'] or inp[1] not in ['1','2','3','4','5','6','7','8']:
+        q = input("invalid input, press q to quit or any other key to try again")
+        if q == 'q':
+            exit()
+    else:
+        valid_inp = True
+
+initx = column_map[inp[0]]
+inity = int(inp[1])-1
+
+knight = Knight((initx,inity))
 board.setInitialKnightPos(initx,inity)
+
 print("starting pos:",knight.xpos,knight.ypos)
+"""
 while True:
     print("legal moves:", knight.legalmoves())
     inp = input("Choose a direction for a move ")
@@ -99,4 +100,43 @@ while True:
     inp = int(inp)
     knight.move(inp)
     print("new position:",knight.xpos,knight.ypos)
+"""
+
+
+def randomwalk(startx,starty,board,knight):
+    numberofmoves = 0
+    for i in range(100):
+        legalmoves = knight.legalmoves()
+        nextmove = random.choice(tuple(legalmoves))
+        if not board.visited[nextmove[1]][nextmove[0]]:
+            numberofmoves += 1
+            knight.move(nextmove,numberofmoves)
+    
+    board.printBoard()
+
+
+# a friend told me that this works, apparently the algorithm also has a name
+# the alg is just that at each point, you look at all possible moves, and for those resulting
+# squaers, the number of available moves. If you choose to move to the square with the minimum
+# number of next moves available, then you will never corner yourself apparently
+def knightPath(startx,starty,board,knight):
+    for i in range(63):
+        moves = knight.availableMoves(board.visited)
+        minimumMoves = 9
+        topCandidate = -1
+        for candidateMove in moves:
+            child = Knight(candidateMove)
+            childMoves = len(child.availableMoves(board.visited))-1
+            #don't want to count the square we're currently on, although it actually doesn't matter in this case
+            if childMoves < minimumMoves:
+                minimumMoves = childMoves
+                topCandidate = candidateMove
+        knight.move(topCandidate, i+1)
+
+    board.printBoard()
+
+knightPath(knight.xpos,knight.ypos,board,knight)
+
+
+#randomwalk(knight.xpos,knight.ypos,board,knight)
 
