@@ -72,10 +72,34 @@ class Knight:
             # return something
             pass
 
+# maybe have a method named validmoves that returns the directions to which the knight legally can jump.
+# think that might be quite nice actually, then i don't have to check all of this bs in the move method
+
+
+
+class Board:
+    def __init__(self):
+        self.rows = [["0" for i in range(8)] for i in range(8)]
+        
+
+    def wipe(self):
+        for row in self.rows:
+            row = [0]*8
+
+    def printBoard(self):
+        print("-"*41)
+        print("|   "+"-"*33+"   |")
+        for i in range(8):
+            print("|{}  ".format(i)+"| "+" | ".join(self.rows[i])+" |   |")
+            print("|   "+"-"*33+"   |")
+        print("|     A   B   C   D   E   F   G   H     |")
+        print("-"*41)
 
 # generate matrix to store the board. Will record the visited positions later.
 
-board = [[-1 for _ in range(8)] for _ in range(8)]
+board = Board()
+
+#board.printBoard()
 
 """
 # testing move stuff
