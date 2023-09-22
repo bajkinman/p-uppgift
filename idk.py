@@ -3,22 +3,23 @@ from random import choice
 class Board:
     def __init__(self):
         self.squares = [["." for _ in range(8)] for _ in range(8)]
-        self.knightx = -1
-        self.knighty = -1
         self.visited = [[False for _ in range(8)] for _ in range(8)]
         self.movenumber = 0
-        self.xpos = initialpos[0]
-        self.ypos = initialpos[1]
+        self.xpos = -1
+        self.ypos = -1
+        self.knightWalk = []
 
     def setKnightPos(self,square):
-        self.knightx = square[0]
-        self.knighty = square[1]
+        self.xpos = square[0]
+        self.ypos = square[1]
+        self.knightWalk.append((self.xpos,self.ypos))
         self.squares[y][x] = "N"
         self.visited[y][x] = True
 
     def wipe(self):
         self.squares = [["." for _ in range(8)] for _ in range(8)]
         self.visited = [[False for _ in range(8)] for _ in range(8)]
+        self.knightWalk = []
 
     def legalmoves(self):
         legal = set()
@@ -50,6 +51,15 @@ class Board:
         self.squares[self.ypos][self.xpos] = str(movenumber)
         self.squares[self.ypos][self.xpos] = "N"
         self.visited[self.ypos][self.xpos] = True
+        self.knightWalk.append((self.xpos,self.ypos))
+
+    def undoLastMove(self):
+        xremove,yremove = self.knightWalk.pop()
+        self.visited[yremove][xremove] = False
+        self.squares[yremove][xremove] = "."
+        self.xpos,self.ypos = self.knightWalk[-1]
+        self.squares[self.ypos][self.xpos] = "N"
+        self.movenumber -= 1
 
     def printBoard(self):
         print("-"*41)
@@ -91,6 +101,9 @@ def menu():
         wanthelp = input("Do you want the computer to show the valid moves when you enter the walk (y/n)? ")
         inputWalk(wanthelp)
     elif choice == "3":
+        print("-"*40)
+        print("The computer will generete a walk that visits every square exactly once,")
+        print("starting from any square you specify.")
         completeWalk()
 
 
@@ -133,9 +146,11 @@ def inputWalk(showValidMoves = 'n'):
     validInput = False
     while not validInput:
         numberOfSquares = input("Enter the number of squares in your walk (or q to quit to menu): ")
+        if numberOfSquares == "q":
+            return
         try:
-            int(numberOfSquares)
-        except ValueError:
+            numberOfSquares = int(numberOfSquares)
+        except Exception:
             numberOfSquares = -1
             
         if 1 <= int(numberofsquares) <= 64:
@@ -154,18 +169,23 @@ def inputWalk(showValidMoves = 'n'):
 # that often works. 
 # it doesn't work if you start at g6: solution, just slightly change some choice if you die
 # i have to fix this
-def completeWalk(startx,starty,board,knight):
+def completeWalk(startx,starty,board):
     for i in range(63):
-        moves = knight.availableMoves(board.visited)
+        moves = board.notVisitedMoves()
         minimumMoves = 9
         topCandidate = -1
+        
+        #random.shuffle(moves)
+        # loop through moves, move knight to candidate square, check how many 
+        # options it has there, store that number, then move back and proceed to next move.
         for candidateMove in moves:
-            child = Knight(candidateMove)
-            childMoves = len(child.availableMoves(board.visited))-1
+            board.moveKnight(candidateMove)
+            childMoves = len(board.notVisitedMoves())-1
+            board.undoLastMove()
             if childMoves < minimumMoves:
                 minimumMoves = childMoves
                 topCandidate = candidateMove
-        knight.move(topCandidate, i+1)
+        board.moveKnight(topCandidate)
 
     for row in board.visited:
         if sum(row) < 8:
