@@ -4,7 +4,7 @@ class Board:
     def __init__(self):
         self.squares = [["." for _ in range(8)] for _ in range(8)]
         self.visited = [[False for _ in range(8)] for _ in range(8)]
-        self.movenumber = 0
+        self.moveNumber = 0
         self.xpos = -1
         self.ypos = -1
         self.knightWalk = []
@@ -13,15 +13,15 @@ class Board:
         self.xpos = square[0]
         self.ypos = square[1]
         self.knightWalk.append((self.xpos,self.ypos))
-        self.squares[y][x] = "N"
-        self.visited[y][x] = True
+        self.squares[self.ypos][self.xpos] = "N"
+        self.visited[self.ypos][self.xpos] = True
 
     def wipe(self):
         self.squares = [["." for _ in range(8)] for _ in range(8)]
         self.visited = [[False for _ in range(8)] for _ in range(8)]
         self.knightWalk = []
 
-    def legalmoves(self):
+    def legalMoves(self):
         legal = set()
         moves = [(2,1),(1,2),(-1,2),(-2,1),(-2,-1),(-1,-2),(1,-2),(2,-1)]
         for x,y in moves:
@@ -31,24 +31,24 @@ class Board:
 
     def notVisitedMoves(self):
         available = set()
-        for x,y in self.legalmoves():
+        for x,y in self.legalMoves():
             if not self.visited[y][x]:
                 available.add((x,y))
         return available
     
     def moveKnight(self,square):
-        if square not in self.legalmoves():
+        if square not in self.legalMoves():
             print("not a legal move, try again")
             return
 
-        if board.visited[square[1]][square[0]]:
+        if self.visited[square[1]][square[0]]:
             print("already visited, try again")
             return
 
-        self.movenumber += 1
+        self.moveNumber += 1
+        self.squares[self.ypos][self.xpos] = str(self.moveNumber)
         self.xpos = square[0]
         self.ypos = square[1]
-        self.squares[self.ypos][self.xpos] = str(movenumber)
         self.squares[self.ypos][self.xpos] = "N"
         self.visited[self.ypos][self.xpos] = True
         self.knightWalk.append((self.xpos,self.ypos))
@@ -109,11 +109,11 @@ def menu():
 
 def squareToCoords(square):
     columnMap = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7 }
-    return columnmap[square[0]],int(square[1])-1
+    return (columnMap[square[0]],int(square[1])-1)
 
 
 def validSquareInput(square):
-    if len(square) != 2 or square[0] not in list('abcdefgh') or square[1] not in list(*range(8)):
+    if len(square) != 2 or square[0] not in list('abcdefgh') or square[1] not in ['1','2','3','4','5','6','7','8']:
         print("Invalid input square, try again")
         return False
     return True
@@ -127,17 +127,18 @@ def randomWalk():
         startSquare = input("Enter the square that the computer starts the path from: ")
         validInput = validSquareInput(startSquare)
     
-    board.setKnightPos(startSquare)
+    board.setKnightPos(squareToCoords(startSquare))
 
     while True:
         moveCandidates = board.notVisitedMoves()
         if len(moveCandidates) == 0:
             break
         nextmove = choice(tuple(moveCandidates))
-        board.moveKnight(nextmove,numberofmoves)
+        board.moveKnight(nextmove)
     print("Resulting path:")
     board.printBoard()
     input("Enter anything to return back to the menu")
+    # implement how to get back to menu
 
 
 def inputWalk(showValidMoves = 'n'):
