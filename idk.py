@@ -74,8 +74,7 @@ class Board:
         print("-"*41)
 
 
-def menu():
-    print("hello blablabla")
+def menu(): #returns a bool: true if user wants to quit the program
     print("Enter 1 to compute a random walk")
     print("Enter 2 to input your own walk")
     print("Enter 3 to compute a walk that visits every square")
@@ -87,7 +86,7 @@ def menu():
             break
         elif choice == "q":
             print("-"*7+"Exiting out of the program"+"-"*7)
-            exit()
+            return True
         else:
             print("Invalid input, try again")
     if choice == "1":
@@ -105,12 +104,16 @@ def menu():
         print("The computer will generete a walk that visits every square exactly once,")
         print("starting from any square you specify.")
         completeWalk()
+    return False
 
 
 def squareToCoords(square):
     columnMap = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7 }
     return (columnMap[square[0]],int(square[1])-1)
 
+def coordsToSquare(square):
+    reverseMap = list('abcdefgh')
+    return reverseMap[square[0]]+str(square[1]+1)
 
 def validSquareInput(square):
     if len(square) != 2 or square[0] not in list('abcdefgh') or square[1] not in ['1','2','3','4','5','6','7','8']:
@@ -137,13 +140,14 @@ def randomWalk():
         board.moveKnight(nextmove)
     print("Resulting path:")
     board.printBoard()
-    input("Enter anything to return back to the menu")
+    input("Enter anything to return back to the menu ")
     # implement how to get back to menu
 
 
 def inputWalk(showValidMoves = 'n'):
     # change so that they start by specifying the starting square
     # and then the number of moves (0 <= moves <= 63)
+    board = Board()
     validInput = False
     while not validInput:
         numberOfSquares = input("Enter the number of squares in your walk (or q to quit to menu): ")
@@ -153,17 +157,38 @@ def inputWalk(showValidMoves = 'n'):
             numberOfSquares = int(numberOfSquares)
         except Exception:
             numberOfSquares = -1
-            
-        if 1 <= int(numberofsquares) <= 64:
-                validinput = True
+           
+        if 1 <= int(numberOfSquares) <= 64:
+                validInput = True
         else:
             print("Invalid input, try again")
-    
-    for movenumber in range(1,numberOfSquares):
+   
+    # handle the initial square separately
+    validInput = False
+    while not validInput:
+        startSquare = input("Enter the starting square of your walk: ")
+        validInput = validSquareInput(startSquare)
+        if not validInput:
+            print("Invalid  square, try again")
+    board.setKnightPos(squareToCoords(startSquare))
+
+    # loop through the rest of the squares
+    for squareNumber in range(2,numberOfSquares+1):
+        if showValidMoves == 'y':
+            print("Available squares:",*[coordsToSquare(square) for square in board.notVisitedMoves()])
         validInput = False
         while not validInput:
-            nextSquare = input(f"Enter square number {movenumber} of your walk: ")
+            nextSquare = input(f"Enter square number {squareNumber} of your walk: ")
             validInput = validSquareInput(nextSquare)
+            if not validInput:
+                print("Invalid square, try again")
+        board.moveKnight(squareToCoords(nextSquare))
+  
+    print("-"*40)
+    print("Your path:")
+    print(", ".join([f"{i+1}.{coordsToSquare(board.knightWalk[i])}" for i in range(numberOfSquares)]))
+    board.printBoard()
+    input("Enter anything to return back to the menu ")
 
 
 # this algorithm is called Warnsdorff's algorithm and it's actually just a heuristic
@@ -193,10 +218,16 @@ def completeWalk(startx,starty,board):
             board.printBoard()
             break
 
-menu()
 
+def main():
+    print("hello blablabla")
+    user_quit = False
+    while not user_quit:
+        user_quit = menu()
 
+main()
 
+#testing if a complete walk can be generated from any starting square
 """
 for initx in range(8):
     for inity in range(8):
