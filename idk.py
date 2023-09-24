@@ -228,7 +228,7 @@ def completeWalk():
             board.printBoard()
 
 def main():
-    print("hello blablabla")
+    print("hello do something")
     user_quit = False
     while not user_quit:
         user_quit = menu()
