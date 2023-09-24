@@ -1,4 +1,5 @@
-from random import choice
+from random import choice, shuffle
+#import tkinter
 
 class Board:
     def __init__(self):
@@ -22,18 +23,18 @@ class Board:
         self.knightWalk = []
 
     def legalMoves(self):
-        legal = set()
+        legal = [] 
         moves = [(2,1),(1,2),(-1,2),(-2,1),(-2,-1),(-1,-2),(1,-2),(2,-1)]
         for x,y in moves:
             if 0 <= self.xpos+x <= 7 and 0 <= self.ypos+y <= 7:
-                legal.add((self.xpos+x,self.ypos+y))
+                legal.append((self.xpos+x,self.ypos+y))
         return legal
 
     def notVisitedMoves(self):
-        available = set()
+        available = []
         for x,y in self.legalMoves():
             if not self.visited[y][x]:
-                available.add((x,y))
+                available.append((x,y))
         return available
     
     def moveKnight(self,square):
@@ -59,7 +60,7 @@ class Board:
         self.squares[yremove][xremove] = "."
         self.xpos,self.ypos = self.knightWalk[-1]
         self.squares[self.ypos][self.xpos] = "N"
-        self.movenumber -= 1
+        self.moveNumber -= 1
 
     def printBoard(self):
         print("-"*41)
@@ -121,22 +122,25 @@ def validSquareInput(square):
         return False
     return True
 
-
+def getStartingSquare(board):
+    validInput = False
+    while not validInput:
+        startSquare = input("Enter the starting square of the path: ")
+        validInput = validSquareInput(startSquare)
+        if not validInput:
+            print("Invalid  square, try again")
+    board.setKnightPos(squareToCoords(startSquare))
+    
 def randomWalk(): 
     # generate next move randomly by choosing uniformly from the not visited legal moves
     board = Board()
-    validInput = False
-    while not validInput:
-        startSquare = input("Enter the square that the computer starts the path from: ")
-        validInput = validSquareInput(startSquare)
-    
-    board.setKnightPos(squareToCoords(startSquare))
+    getStartingSquare(board)
 
     while True:
         moveCandidates = board.notVisitedMoves()
         if len(moveCandidates) == 0:
             break
-        nextmove = choice(tuple(moveCandidates))
+        nextmove = choice(moveCandidates)
         board.moveKnight(nextmove)
     print("Resulting path:")
     board.printBoard()
@@ -144,6 +148,7 @@ def randomWalk():
     # implement how to get back to menu
 
 
+# have to fix so that it actually checks if it's a valid knight path, it's pretty ez
 def inputWalk(showValidMoves = 'n'):
     # change so that they start by specifying the starting square
     # and then the number of moves (0 <= moves <= 63)
@@ -163,16 +168,9 @@ def inputWalk(showValidMoves = 'n'):
         else:
             print("Invalid input, try again")
    
-    # handle the initial square separately
-    validInput = False
-    while not validInput:
-        startSquare = input("Enter the starting square of your walk: ")
-        validInput = validSquareInput(startSquare)
-        if not validInput:
-            print("Invalid  square, try again")
-    board.setKnightPos(squareToCoords(startSquare))
+    getStartingSquare(board)
 
-    # loop through the rest of the squares
+    # loop through to get the rest of the squares
     for squareNumber in range(2,numberOfSquares+1):
         if showValidMoves == 'y':
             print("Available squares:",*[coordsToSquare(square) for square in board.notVisitedMoves()])
@@ -195,29 +193,39 @@ def inputWalk(showValidMoves = 'n'):
 # that often works. 
 # it doesn't work if you start at g6: solution, just slightly change some choice if you die
 # i have to fix this
-def completeWalk(startx,starty,board):
-    for i in range(63):
-        moves = board.notVisitedMoves()
-        minimumMoves = 9
-        topCandidate = -1
-        
-        #random.shuffle(moves)
-        # loop through moves, move knight to candidate square, check how many 
-        # options it has there, store that number, then move back and proceed to next move.
-        for candidateMove in moves:
-            board.moveKnight(candidateMove)
-            childMoves = len(board.notVisitedMoves())-1
-            board.undoLastMove()
-            if childMoves < minimumMoves:
-                minimumMoves = childMoves
-                topCandidate = candidateMove
-        board.moveKnight(topCandidate)
+def completeWalk():
+    
+    board = Board()
+    getStartingSquare(board)
 
-    for row in board.visited:
-        if sum(row) < 8:
+    foundWalk = False
+    while not foundWalk:
+        for i in range(63):
+            moves = board.notVisitedMoves()
+            minimumMoves = 9
+            topCandidate = -1
+            
+            shuffle(moves)
+            # loop through moves, move knight to candidate square, check how many 
+            # options it has there, store that number, then move back and proceed to next move.
+            for candidateMove in moves:
+                board.moveKnight(candidateMove)
+                childMoves = len(board.notVisitedMoves())-1
+                board.undoLastMove()
+                if childMoves < minimumMoves:
+                    minimumMoves = childMoves
+                    topCandidate = candidateMove
+            board.moveKnight(topCandidate)
+
+        cond = True
+        for row in board.visited:
+            if sum(row) < 8:
+                #board.printBoard()
+                cond = False
+                break
+        if cond:
+            foundWalk = True
             board.printBoard()
-            break
-
 
 def main():
     print("hello blablabla")
