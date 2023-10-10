@@ -9,7 +9,41 @@ def tk_sleep(time_s):
     root.after(time_ms, lambda: variable.set(1))
     root.wait_variable(variable)
 
+# i think this class is pretty nice
+class Knightwalk:
+    def __init__(self,walk,board):
+        self.movenumber = 1 # this one is 1-indexed ig
+        self.walk = walk
+        x = SQUARE_SIZE*walk[0][0]+PAD
+        y = SQUARE_SIZE*(7-walk[0][1])+PAD
+        self.canvas = board 
+        self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+    
+    def CurrSquare(self):
+        return self.walk[self.movenumber-1]
 
+    def moveForward(self):
+        oldSquare = self.CurrSquare()
+        self.movenumber += 1
+        newSquare = self.CurrSquare()
+        x = SQUARE_SIZE*newSquare[0]+PAD
+        y = SQUARE_SIZE*(7-newSquare[1])+PAD
+        
+        self.canvas.delete(self.knightIcon)
+        self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+
+    def moveBackward(self):
+        oldSquare = self.CurrSquare()
+        self.movenumber -= 1
+        newSquare = self.CurrSquare()
+        x = SQUARE_SIZE*newSquare[0]+PAD
+        y = SQUARE_SIZE*(7-newSquare[1])+PAD
+        
+        self.canvas.delete(self.knightIcon)
+        self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+
+
+# initialise basic window
 root = Tk()
 root.title("Springarvandring")
 root.geometry("1000x800+0+0")
@@ -21,8 +55,8 @@ PAD = 20
 BOARD_DIM = 2*PAD+8*SQUARE_SIZE
 LIGHT_COLOUR = "#edce93"
 DARK_COLOUR = "#a8720a"
-# the image has the same dimensions as a square: 75x75
-knightImg = PhotoImage(file="yes.png")
+knightImg = PhotoImage(file="yes.png") #image has same dim as a square
+
 
 # frame that contains the board and the buttons below to step forward or backward
 leftframe = Frame(root,highlightbackground="black",highlightthickness=2)
@@ -30,7 +64,6 @@ leftframe.pack(side="left")
 
 boardcanvas = Canvas(leftframe,width=BOARD_DIM,height=BOARD_DIM)
 boardcanvas.pack(padx=(PAD,PAD),pady=(PAD,PAD))
-
 for i in range(8):
     boardcanvas.create_text((PAD/2,SQUARE_SIZE*(i+0.5)+PAD),text=str(8-i),anchor=CENTER)
     boardcanvas.create_text((SQUARE_SIZE*(i+0.5)+PAD,BOARD_DIM-PAD/2),text=chr(97+i),anchor=CENTER)
@@ -46,13 +79,6 @@ for i in range(8):
         else:
             boardcanvas.create_rectangle(x1,y1,x2,y2,fill=DARK_COLOUR)
 
-bottomframe = Frame(leftframe,highlightbackground="blue",highlightthickness=2)
-bottomframe.pack(side="bottom")
-
-prevMoveButton = Button(bottomframe, text="<-").pack(side="left")
-nextMoveButton = Button(bottomframe, text="->").pack(side="left")
-
-
 menuframe = Frame(root,highlightbackground="blue",highlightthickness=2)
 menuframe.pack(side="left")
 
@@ -62,44 +88,42 @@ movelistframe.pack(side="top")
 movelabels = []
 for i in range(4):
     for j in range(16):
-        movelabels.append(Label(movelistframe,text=f"{16*i+j}",highlightbackground="red",highlightthickness=2))
+        movelabels.append(Label(movelistframe,text=""))
         movelabels[16*i+j].grid(row=j,column=i)
 
-def updateMoveListText(movenumber,labellist,knightwalk):
-    for i in range(1,65):
-        if i <= movenumber:
-            labellist[i-1].config(text=f"{i}. a4")
-        else:
-            labellist[i-1].config(text="")
+
+knightWalk = Knightwalk([(0,0),(1,2),(2,4),(4,5),(5,3),(3,4)], boardcanvas)
+
+def moveBackwardButtonFn(knightwalk):
+    knightwalk.moveBackward()
+
+def moveForwardButtonFn(knightwalk):
+    knightwalk.moveForward()
+
+bottomframe = Frame(leftframe)
+bottomframe.pack(side="bottom")
+prevMoveButton = Button(bottomframe, text="<-", command=lambda: moveBackwardButtonFn(knightWalk))
+prevMoveButton.pack(side="left")
+nextMoveButton = Button(bottomframe, text="->", command=lambda: moveForwardButtonFn(knightWalk))
+nextMoveButton.pack(side="left")
 
 
-def placeKnight(square):
-    # only used when placing the knight on the starting square
-    x = SQUARE_SIZE*square[0]+PAD
-    y = SQUARE_SIZE*(7-square[1])+PAD
-    Icon = boardcanvas.create_image(x,y,anchor=NW,image=knightImg)
-    return Icon
+def coordsToSquare(coords):
+    reverseMap = list('abcdefgh')
+    return reverseMap[coords[0]]+str(coords[1]+1)
 
-def updateKnightPos(oldIcon,square,movenumber):
-    # this is a bit scuffed ig, have to save new knight as the output
-    # this function.
-    x = SQUARE_SIZE*square[0]+PAD
-    y = SQUARE_SIZE*(7-square[1])+PAD
-    boardcanvas.delete(oldIcon)
-    newIcon = boardcanvas.create_image(x,y,anchor=NW,image=knightImg)
-    return newIcon
+def displayMoveList(labellist,walk):
+    for i in range(len(walk)):
+        coords = walk[i]
+        labellist[i].config(text=f"{i+1}. {coordsToSquare(coords)}")
 
-def displayMoveNumber(knightwalk,movenumber):
-    # displays the board after move moves of the knightwalk
-    # maybe wipe?
-    for i in range(movenumber-1):
-        xcoord,ycoord = knightwalk[i]
-        x = SQUARE_SIZE*xcoord+PAD
-        y = SQUARE_SIZE*ycoord+PAD
-        
+def showCurrentMove(labellist,movenumber): #movenumber is 1-indexed ig
+    labellist[movenumber-1].config(highlightbackground="red",highlightthickness=2)
+    # also make sure the other ones don't have a red box
+
 
 def displayWalk(knightWalk):
-    # read in the knightwalk and do everything graphics-related with it
+    # change this entirely
     startingSquare = knightWalk[0]
     
     knightIcon = placeKnight(startingSquare)
@@ -109,10 +133,12 @@ def displayWalk(knightWalk):
 
 
 # test to see if anything works
-knightWalk = [(0,0),(1,2),(2,4),(4,5),(5,3),(3,4)]
-#displayWalk(knightWalk)
 
-updateMoveListText(4,movelabels,knightWalk)
+#displayMoveList(movelabels,knightWalk.walk)
+#showCurrentMove(movelabels,knightWalk.movenumber)
+
+
+
 
 root.mainloop()
 
