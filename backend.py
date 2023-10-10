@@ -99,10 +99,10 @@ def getStartingSquare(board):
             print("Invalid  square, try again")
     board.setKnightPos(squareToCoords(startSquare))
     
-def randomWalk(): 
+def randomWalk(start): 
     # generate next move randomly by choosing uniformly from the not visited legal moves
     board = Board()
-    getStartingSquare(board)
+    walk = [start]
 
     while True:
         moveCandidates = board.notVisitedMoves()
@@ -110,10 +110,8 @@ def randomWalk():
             break
         nextmove = choice(moveCandidates)
         board.moveKnight(nextmove)
-    print("Resulting path:")
-    board.printBoard()
-    input("Enter anything to return back to the menu ")
-
+        walk.append(nextmove)
+    return walk
 
 # have to fix so that it actually checks if it's a valid knight path, it's pretty ez
 def inputWalk(showValidMoves = 'n'):
@@ -158,16 +156,14 @@ def inputWalk(showValidMoves = 'n'):
 
 # this algorithm is called Warnsdorff's algorithm and it's actually just a heuristic
 # that often works. 
-def completeWalk(x,y):
-    
+def completeWalk(start):
     board = Board()
-    #getStartingSquare(board)
 
     foundWalk = False
     while not foundWalk:
         board.wipe()
-        board.setKnightPos((x,y))
-
+        board.setKnightPos(start)
+        walk = [start]
         for i in range(63):
             moves = board.notVisitedMoves()
             if len(moves) == 0:
@@ -186,6 +182,7 @@ def completeWalk(x,y):
                     minimumMoves = childMoves
                     topCandidate = move
             board.moveKnight(topCandidate)
+            walk.append(topCandidate)
 
         cond = True
         
@@ -196,16 +193,14 @@ def completeWalk(x,y):
         if cond:
             foundWalk = True
 
-    board.printBoard()
-    input("Enter anything to return back to the menu ")
-
+    return walk
 
 #testing if a complete walk can be generated from any starting square
-
+"""
 for initx in range(8):
     for inity in range(8):
         print(initx,inity)
 
-        completeWalk(initx,inity)
-
-
+        knightwalk = completeWalk((initx,inity))
+        #print(knightwalk)
+"""
