@@ -68,9 +68,10 @@ for i in range(4):
 def updateMoveListText(movenumber,labellist,knightwalk):
     for i in range(1,65):
         if i <= movenumber:
-            labellist[i-1].config(text="a4")
+            labellist[i-1].config(text=f"{i}. a4")
         else:
             labellist[i-1].config(text="")
+
 
 def placeKnight(square):
     # only used when placing the knight on the starting square
@@ -111,6 +112,7 @@ def displayWalk(knightWalk):
 knightWalk = [(0,0),(1,2),(2,4),(4,5),(5,3),(3,4)]
 #displayWalk(knightWalk)
 
+updateMoveListText(4,movelabels,knightWalk)
 
 root.mainloop()
 
