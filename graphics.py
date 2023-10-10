@@ -1,6 +1,14 @@
 from tkinter import *
 from tkinter import ttk
-from backend import *
+#from backend import *
+
+# apparently time.sleep() doesn't work with tkinter stuff, use this one
+def tk_sleep(time_s):
+    time_ms = int(time_s*1000)
+    variable = IntVar(root)
+    root.after(time_ms, lambda: variable.set(1))
+    root.wait_variable(variable)
+
 
 root = Tk()
 root.title("Springarvandring")
@@ -13,40 +21,8 @@ PAD = 20
 BOARD_DIM = 2*PAD+8*SQUARE_SIZE
 LIGHT_COLOUR = "#edce93"
 DARK_COLOUR = "#a8720a"
-
-# apparently time.sleep() doesn't work with tkinter stuff, use this one
-def tk_sleep(time_s):
-    time_ms = int(time_s*1000)
-    variable = IntVar(root)
-    root.after(time_ms, lambda: variable.set(1))
-    root.wait_variable(variable)
-
-
-def getStartingSquareGraphics():
-    # something like this
-    """
-    startSquare = entry.get()
-    entry = Entry(menuframe,width=20)
-    entry.focus_set()
-    entry.pack()
-    Button(menuframe,text="välj",width=10,command=
-    """
-    pass
-
-def rwGraphics():
-    # random walk graphics
-    startSquare = getStartingSquareGraphics()
-    start = squareToCoords(startSquare)
-    walk = randomWalk(start)
-    displaywalk(walk)
-
-def iwGraphics():
-    pass
-
-
-def cwGraphics():
-    pass
-
+# the image has the same dimensions as a square: 75x75
+knightImg = PhotoImage(file="yes.png")
 
 # frame that contains the board and the buttons below to step forward or backward
 leftframe = Frame(root,highlightbackground="black",highlightthickness=2)
@@ -72,23 +48,29 @@ for i in range(8):
 
 bottomframe = Frame(leftframe,highlightbackground="blue",highlightthickness=2)
 bottomframe.pack(side="bottom")
+
 prevMoveButton = Button(bottomframe, text="<-").pack(side="left")
 nextMoveButton = Button(bottomframe, text="->").pack(side="left")
+
 
 menuframe = Frame(root,highlightbackground="blue",highlightthickness=2)
 menuframe.pack(side="left")
 
-randomWalkButton = Button(menuframe, text="Generera slumpad vandring", command=rwGraphics())
-inputWalkButton = Button(menuframe, text="Skriv in din egen vandring")
-completeWalkButton = Button(menuframe, text="Besök alla rutor")
-randomWalkButton.pack()
-inputWalkButton.pack()
-completeWalkButton.pack()
+movelistframe = Frame(menuframe,highlightbackground="green",highlightthickness=2)
+movelistframe.pack(side="top")
 
+movelabels = []
+for i in range(4):
+    for j in range(16):
+        movelabels.append(Label(movelistframe,text=f"{16*i+j}",highlightbackground="red",highlightthickness=2))
+        movelabels[16*i+j].grid(row=j,column=i)
 
-# the image has the same dimensions as a square: 75x75
-knightImg = PhotoImage(file="yes.png")
-
+def updateMoveListText(movenumber,labellist,knightwalk):
+    for i in range(1,65):
+        if i <= movenumber:
+            labellist[i-1].config(text="a4")
+        else:
+            labellist[i-1].config(text="")
 
 def placeKnight(square):
     # only used when placing the knight on the starting square
@@ -127,13 +109,8 @@ def displayWalk(knightWalk):
 
 # test to see if anything works
 knightWalk = [(0,0),(1,2),(2,4),(4,5),(5,3),(3,4)]
-displayWalk(knightWalk)
+#displayWalk(knightWalk)
 
 
 root.mainloop()
-
-
-
-
-
 
