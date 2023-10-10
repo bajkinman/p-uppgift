@@ -83,9 +83,9 @@ def squareToCoords(square):
     columnMap = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7 }
     return (columnMap[square[0]],int(square[1])-1)
 
-def coordsToSquare(square):
+def coordsToSquare(coords):
     reverseMap = list('abcdefgh')
-    return reverseMap[square[0]]+str(square[1]+1)
+    return reverseMap[coords[0]]+str(coords[1]+1)
 
 def validSquareInput(square):
     if len(square) != 2 or square[0] not in list('abcdefgh') or square[1] not in ['1','2','3','4','5','6','7','8']:
