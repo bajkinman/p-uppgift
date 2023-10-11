@@ -1,5 +1,6 @@
 from random import choice, shuffle
-#import tkinter
+#from tkinter import *
+#from tkinter import PhotoImage
 
 class Board:
     def __init__(self):
@@ -40,11 +41,11 @@ class Board:
     def moveKnight(self,square):
         if square not in self.legalMoves():
             print("not a legal move, try again")
-            return
+            return False
 
         if self.visited[square[1]][square[0]]:
             print("already visited, try again")
-            return
+            return False
 
         self.moveNumber += 1
         self.squares[self.ypos][self.xpos] = str(self.moveNumber)
@@ -53,6 +54,7 @@ class Board:
         self.squares[self.ypos][self.xpos] = "N"
         self.visited[self.ypos][self.xpos] = True
         self.knightWalk.append((self.xpos,self.ypos))
+        return True
 
     def undoLastMove(self):
         xremove,yremove = self.knightWalk.pop()
@@ -74,6 +76,11 @@ class Board:
         print("|     A   B   C   D   E   F   G   H     |")
         print("-"*41)
 
+        # gui
+        # if the square is ".", draw empty square, if square is some number,
+        # draw that number, if square is "N", draw the knight
+        # also keep track of light and dark squares
+        
 
 def menu(): #returns a bool: true if user wants to quit the program
     print("Enter 1 to compute a random walk")
@@ -145,7 +152,6 @@ def randomWalk():
     print("Resulting path:")
     board.printBoard()
     input("Enter anything to return back to the menu ")
-    # implement how to get back to menu
 
 
 # have to fix so that it actually checks if it's a valid knight path, it's pretty ez
@@ -178,10 +184,10 @@ def inputWalk(showValidMoves = 'n'):
         while not validInput:
             nextSquare = input(f"Enter square number {squareNumber} of your walk: ")
             validInput = validSquareInput(nextSquare)
-            if not validInput:
-                print("Invalid square, try again")
-        board.moveKnight(squareToCoords(nextSquare))
-  
+            
+            validInput = board.moveKnight(squareToCoords(nextSquare))
+ 
+    print(board.knightWalk)
     print("-"*40)
     print("Your path:")
     print(", ".join([f"{i+1}.{coordsToSquare(board.knightWalk[i])}" for i in range(numberOfSquares)]))
@@ -226,6 +232,7 @@ def completeWalk():
         if cond:
             foundWalk = True
             board.printBoard()
+    input("Enter anything to return back to the menu ")
 
 def main():
     print("hello do something")
@@ -246,4 +253,5 @@ for initx in range(8):
 
         completeWalk(knight.xpos,knight.ypos,board,knight)
 """
+
 
