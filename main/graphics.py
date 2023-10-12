@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-#from backend import *
 
 # apparently time.sleep() doesn't work with tkinter stuff, use this one
 def tk_sleep(time_s):
