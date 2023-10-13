@@ -1,5 +1,5 @@
 from random import choice, shuffle
-from graphics import *
+#from graphics import *
 
 class Board:
     def __init__(self):
@@ -141,8 +141,9 @@ def menu(): #returns a bool: true if user wants to quit the program
         
         startingSquare = getStartingSquare(board)
         walk = completeWalk(board,startingSquare)
+        print(walk)
     
-    showGraphics(walk)
+    #showGraphics(walk)
 
 
 def randomWalk(board,start): 

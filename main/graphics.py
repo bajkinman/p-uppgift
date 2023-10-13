@@ -1,12 +1,19 @@
 from tkinter import *
 from tkinter import ttk
 
+TESTWALK = [(0, 0), (2, 1), (0, 2), (1, 0), (3, 1), (5, 0), (7, 1), (6, 3), (7, 5), (6, 7), (4, 6), (2, 7), (0, 6), (1, 4), (2, 6), (0, 7), (1, 5), (0, 3), (1, 1), (3, 0), (4, 2), (6, 1), (4, 0), (5, 2), (7, 3), (5, 4), (6, 6), (4, 7), (3, 5), (2, 3), (0, 4), (1, 6), (3, 7), (5, 6), (7, 7), (6, 5), (4, 4), (2, 5), (1, 7), (0, 5), (1, 3), (0, 1), (2, 0), (1, 2), (3, 3), (4, 1), (6, 0), (7, 2), (5, 1), (7, 0), (6, 2), (7, 4), (5, 3), (3, 2), (2, 4), (3, 6), (5, 7), (4, 5), (6, 4), (7, 6), (5, 5), (4, 3), (2, 2), (3, 4)]
+
+
 # apparently time.sleep() doesn't work with tkinter stuff, use this one
 def tk_sleep(time_s):
     time_ms = int(time_s*1000)
     variable = IntVar(root)
     root.after(time_ms, lambda: variable.set(1))
     root.wait_variable(variable)
+
+def coordsToSquare(coords):
+    reverseMap = list('abcdefgh')
+    return reverseMap[coords[0]]+str(coords[1]+1)
 
 # i think this class is pretty nice
 class Knightwalk:
@@ -15,9 +22,10 @@ class Knightwalk:
         self.walk = walk
         x = SQUARE_SIZE*walk[0][0]+PAD
         y = SQUARE_SIZE*(7-walk[0][1])+PAD
-        self.canvas = board 
+        self.canvas = board
         self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
-    
+        self.numberIcons = []
+
     def CurrSquare(self):
         return self.walk[self.movenumber-1]
 
@@ -25,21 +33,50 @@ class Knightwalk:
         oldSquare = self.CurrSquare()
         self.movenumber += 1
         newSquare = self.CurrSquare()
+        oldx = SQUARE_SIZE*(0.5+oldSquare[0])+PAD
+        oldy = SQUARE_SIZE*(7.5-oldSquare[1])+PAD
         x = SQUARE_SIZE*newSquare[0]+PAD
         y = SQUARE_SIZE*(7-newSquare[1])+PAD
         
         self.canvas.delete(self.knightIcon)
         self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+        textIcon = self.canvas.create_text(oldx,oldy,anchor=CENTER,text=f"{self.movenumber-1}",font=("Helvetica 20 bold"))
+        self.numberIcons.append(textIcon)
 
     def moveBackward(self):
         oldSquare = self.CurrSquare()
         self.movenumber -= 1
         newSquare = self.CurrSquare()
+        oldx = SQUARE_SIZE*(0.5+oldSquare[0])+PAD
+        oldy = SQUARE_SIZE*(7.5-oldSquare[1])+PAD
         x = SQUARE_SIZE*newSquare[0]+PAD
         y = SQUARE_SIZE*(7-newSquare[1])+PAD
         
         self.canvas.delete(self.knightIcon)
         self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+        self.canvas.delete(self.numberIcons[-1])
+        self.numberIcons.pop()
+
+
+class Movelist:
+    def __init__(self,knightwalk):
+        self.knightwalk = knightwalk
+        self.movelabels = []
+        for i in range(4):
+            for j in range(16):
+                self.movelabels.append(Label(movelistframe,text="     "))
+                self.movelabels[16*i+j].grid(row=j,column=i,padx=5,pady=1)
+        for i in range(len(knightwalk.walk)):
+            coords = self.knightwalk.walk[i]
+            self.movelabels[i].config(text=f"{i+1}. {coordsToSquare(coords)}")
+        self.movelabels[self.knightwalk.movenumber-1].config(highlightbackground="red",highlightthickness=2)
+    def showCurrMove(self): #movenumber is 1-indexed ig
+        for i in range(64):
+            if i == self.knightwalk.movenumber-1:
+                thickness = 2
+            else:
+                thickness = 0
+            self.movelabels[i].config(highlightbackground="red",highlightthickness=thickness)
 
 
 # initialise basic window
@@ -56,9 +93,8 @@ LIGHT_COLOUR = "#edce93"
 DARK_COLOUR = "#a8720a"
 knightImg = PhotoImage(file="yes.png") #image has same dim as a square
 
-
 # frame that contains the board and the buttons below to step forward or backward
-leftframe = Frame(root,highlightbackground="black",highlightthickness=2)
+leftframe = Frame(root)
 leftframe.pack(side="left")
 
 boardcanvas = Canvas(leftframe,width=BOARD_DIM,height=BOARD_DIM)
@@ -78,47 +114,43 @@ for i in range(8):
         else:
             boardcanvas.create_rectangle(x1,y1,x2,y2,fill=DARK_COLOUR)
 
-menuframe = Frame(root,highlightbackground="blue",highlightthickness=2)
+menuframe = Frame(root)
 menuframe.pack(side="left")
+text1="Tryck på höger- och vänsterpilen på \n"
+text2="tangentbordet för att stega fram respektive \n"
+text3="bak, alternativt använd knapparna under brädet."
+menutext = Label(menuframe,text=text1+text2+text3)
+menutext.pack(side="top")
 
 movelistframe = Frame(menuframe,highlightbackground="green",highlightthickness=2)
 movelistframe.pack(side="top")
 
-movelabels = []
-for i in range(4):
-    for j in range(16):
-        movelabels.append(Label(movelistframe,text=""))
-        movelabels[16*i+j].grid(row=j,column=i)
+# these are very important
+knightWalk = Knightwalk(TESTWALK, boardcanvas)
+moveList = Movelist(knightWalk)
 
 
-knightWalk = Knightwalk([(0,0),(1,2),(2,4),(4,5),(5,3),(3,4)], boardcanvas)
 
-def moveBackwardButtonFn(knightwalk):
+def moveBackwardButtonFn(knightwalk,movelist):
     knightwalk.moveBackward()
+    movelist.showCurrMove()
 
-def moveForwardButtonFn(knightwalk):
+def moveForwardButtonFn(knightwalk,movelist):
     knightwalk.moveForward()
+    movelist.showCurrMove()
 
 bottomframe = Frame(leftframe)
 bottomframe.pack(side="bottom")
-prevMoveButton = Button(bottomframe, text="<-", command=lambda: moveBackwardButtonFn(knightWalk))
+prevMoveButton = Button(bottomframe, text="<-", command=lambda: moveBackwardButtonFn(knightWalk,moveList))
 prevMoveButton.pack(side="left")
-nextMoveButton = Button(bottomframe, text="->", command=lambda: moveForwardButtonFn(knightWalk))
+nextMoveButton = Button(bottomframe, text="->", command=lambda: moveForwardButtonFn(knightWalk,moveList))
 nextMoveButton.pack(side="left")
 
+root.bind("<Left>", lambda event: moveBackwardButtonFn(knightWalk,moveList))
+root.bind("<Right>", lambda event: moveForwardButtonFn(knightWalk,moveList))
 
-def coordsToSquare(coords):
-    reverseMap = list('abcdefgh')
-    return reverseMap[coords[0]]+str(coords[1]+1)
 
-def displayMoveList(labellist,walk):
-    for i in range(len(walk)):
-        coords = walk[i]
-        labellist[i].config(text=f"{i+1}. {coordsToSquare(coords)}")
 
-def showCurrentMove(labellist,movenumber): #movenumber is 1-indexed ig
-    labellist[movenumber-1].config(highlightbackground="red",highlightthickness=2)
-    # also make sure the other ones don't have a red box
 
 
 def displayWalk(knightWalk):
@@ -131,12 +163,8 @@ def displayWalk(knightWalk):
         knightIcon = updateKnightPos(knightIcon,knightWalk[move],move)
 
 
-# test to see if anything works
 
-#displayMoveList(movelabels,knightWalk.walk)
-#showCurrentMove(movelabels,knightWalk.movenumber)
-
-
+#displayMoveList(movelabels,knightWalk)
 
 
 root.mainloop()
