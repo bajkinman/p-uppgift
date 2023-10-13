@@ -30,6 +30,10 @@ class Knightwalk:
         return self.walk[self.movenumber-1]
 
     def moveForward(self):
+        if self.movenumber == len(self.walk):
+            # we should not be allowed to move forward
+            return
+
         oldSquare = self.CurrSquare()
         self.movenumber += 1
         newSquare = self.CurrSquare()
@@ -44,6 +48,10 @@ class Knightwalk:
         self.numberIcons.append(textIcon)
 
     def moveBackward(self):
+        if self.movenumber == 1:
+            # we should not be allowed to move backward
+            return
+
         oldSquare = self.CurrSquare()
         self.movenumber -= 1
         newSquare = self.CurrSquare()
