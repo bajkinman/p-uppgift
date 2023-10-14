@@ -4,13 +4,14 @@ from tkinter import ttk
 TESTWALK = [(0, 0), (2, 1), (0, 2), (1, 0), (3, 1), (5, 0), (7, 1), (6, 3), (7, 5), (6, 7), (4, 6), (2, 7), (0, 6), (1, 4), (2, 6), (0, 7), (1, 5), (0, 3), (1, 1), (3, 0), (4, 2), (6, 1), (4, 0), (5, 2), (7, 3), (5, 4), (6, 6), (4, 7), (3, 5), (2, 3), (0, 4), (1, 6), (3, 7), (5, 6), (7, 7), (6, 5), (4, 4), (2, 5), (1, 7), (0, 5), (1, 3), (0, 1), (2, 0), (1, 2), (3, 3), (4, 1), (6, 0), (7, 2), (5, 1), (7, 0), (6, 2), (7, 4), (5, 3), (3, 2), (2, 4), (3, 6), (5, 7), (4, 5), (6, 4), (7, 6), (5, 5), (4, 3), (2, 2), (3, 4)]
 
 
-# apparently time.sleep() doesn't work with tkinter stuff, use this one
+# function that makes screen sleep for a while, might not need this
 def tk_sleep(time_s):
     time_ms = int(time_s*1000)
     variable = IntVar(root)
     root.after(time_ms, lambda: variable.set(1))
     root.wait_variable(variable)
 
+# square conversion, this is already in idk.py so won't need this one
 def coordsToSquare(coords):
     reverseMap = list('abcdefgh')
     return reverseMap[coords[0]]+str(coords[1]+1)
@@ -73,33 +74,45 @@ class Movelist:
         for i in range(4):
             for j in range(16):
                 self.movelabels.append(Label(movelistframe,text="     "))
-                self.movelabels[16*i+j].grid(row=j,column=i,padx=5,pady=1)
+                self.movelabels[16*i+j].grid(row=j,column=i,padx=2)
         for i in range(len(knightwalk.walk)):
             coords = self.knightwalk.walk[i]
             self.movelabels[i].config(text=f"{i+1}. {coordsToSquare(coords)}")
-        self.movelabels[self.knightwalk.movenumber-1].config(highlightbackground="red",highlightthickness=2)
+            self.movelabels[i].config(highlightbackground=BG_COLOUR,highlightthickness=1.5)
+        self.movelabels[self.knightwalk.movenumber-1].config(highlightbackground="red",highlightthickness=1.5)
+    
     def showCurrMove(self): #movenumber is 1-indexed ig
         for i in range(64):
             if i == self.knightwalk.movenumber-1:
-                thickness = 2
+                colour="red"
             else:
-                thickness = 0
-            self.movelabels[i].config(highlightbackground="red",highlightthickness=thickness)
+                colour = BG_COLOUR
+            self.movelabels[i].config(highlightbackground=colour,highlightthickness=1.5)
 
+
+def moveBackwardButtonFn(knightwalk,movelist):
+    knightwalk.moveBackward()
+    movelist.showCurrMove()
+
+def moveForwardButtonFn(knightwalk,movelist):
+    knightwalk.moveForward()
+    movelist.showCurrMove()
 
 # initialise basic window
 root = Tk()
 root.title("Springarvandring")
 root.geometry("1000x800+0+0")
+#root.configure(bg="#d0d1d6")
 root.resizable(0,0)
 
 # constants
 SQUARE_SIZE = 75
 PAD = 20
 BOARD_DIM = 2*PAD+8*SQUARE_SIZE
+BG_COLOUR = root.cget("bg") #apparently this colour varies across operating systems
 LIGHT_COLOUR = "#edce93"
 DARK_COLOUR = "#a8720a"
-knightImg = PhotoImage(file="yes.png") #image has same dim as a square
+knightImg = PhotoImage(file="yes.png") #image has same dimensions as a square
 
 # frame that contains the board and the buttons below to step forward or backward
 leftframe = Frame(root)
@@ -130,22 +143,13 @@ text3="bak, alternativt använd knapparna under brädet."
 menutext = Label(menuframe,text=text1+text2+text3)
 menutext.pack(side="top")
 
-movelistframe = Frame(menuframe,highlightbackground="green",highlightthickness=2)
-movelistframe.pack(side="top")
+movelistframe = Frame(menuframe,highlightbackground="grey",highlightthickness=2)
+movelistframe.pack(side="top",pady=10)
 
 # these are very important
 knightWalk = Knightwalk(TESTWALK, boardcanvas)
 moveList = Movelist(knightWalk)
 
-
-
-def moveBackwardButtonFn(knightwalk,movelist):
-    knightwalk.moveBackward()
-    movelist.showCurrMove()
-
-def moveForwardButtonFn(knightwalk,movelist):
-    knightwalk.moveForward()
-    movelist.showCurrMove()
 
 bottomframe = Frame(leftframe)
 bottomframe.pack(side="bottom")
@@ -156,23 +160,6 @@ nextMoveButton.pack(side="left")
 
 root.bind("<Left>", lambda event: moveBackwardButtonFn(knightWalk,moveList))
 root.bind("<Right>", lambda event: moveForwardButtonFn(knightWalk,moveList))
-
-
-
-
-
-def displayWalk(knightWalk):
-    # change this entirely
-    startingSquare = knightWalk[0]
-    
-    knightIcon = placeKnight(startingSquare)
-    for move in range(1,len(knightWalk)):
-        tk_sleep(0.2)
-        knightIcon = updateKnightPos(knightIcon,knightWalk[move],move)
-
-
-
-#displayMoveList(movelabels,knightWalk)
 
 
 root.mainloop()
