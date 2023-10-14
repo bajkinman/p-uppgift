@@ -1,5 +1,4 @@
 from random import choice, shuffle
-#from graphics import *
 
 class Board:
     def __init__(self):
@@ -89,7 +88,7 @@ def coordsToSquare(coords):
 
 def validSquareInput(square):
     if len(square) != 2 or square[0] not in list('abcdefgh') or square[1] not in ['1','2','3','4','5','6','7','8']:
-        print("Invalid input square, try again")
+        print("Invalid square, try again")
         return False
     return True
 
@@ -98,11 +97,9 @@ def getStartingSquare(board):
     while not validInput:
         startSquare = input("Enter the starting square of the path: ")
         validInput = validSquareInput(startSquare)
-        if not validInput:
-            print("Invalid square, try again")
     return squareToCoords(startSquare)
 
-def menu(): #returns a bool: true if user wants to quit the program
+def menu():
     print("Enter 1 to compute a random walk")
     print("Enter 2 to input your own walk")
     print("Enter 3 to compute a walk that visits every square")
@@ -110,11 +107,8 @@ def menu(): #returns a bool: true if user wants to quit the program
     validChoice = False
     while not validChoice:
         choice = input("Your choice: ")
-        if choice in ["1","2","3"]:
+        if choice in ["1","2","3","q"]:
             break
-        elif choice == "q":
-            print("-"*7+"Exiting out of the program"+"-"*7)
-            return True
         else:
             print("Invalid input, try again")
     
@@ -130,6 +124,8 @@ def menu(): #returns a bool: true if user wants to quit the program
         print("-"*40)
         print("Input your own walk and have it shown on the board.")
         print("Enter the walk in the format of the squares in the order that the knight visits them.")
+        print("The walk has to consist of legal moves for the knight, and no square may be visited")
+        print("more than once.")
 
         wanthelp = input("Do you want the computer to show the valid moves when you enter the walk (y/n)? ")
         walk = inputWalk(board,wanthelp)
@@ -143,8 +139,8 @@ def menu(): #returns a bool: true if user wants to quit the program
         walk = completeWalk(board,startingSquare)
         print(walk)
     
-    #showGraphics(walk)
-
+    elif choice == "q":
+        print("-"*7+"Exiting out of the program"+"-"*7)
 
 def randomWalk(board,start): 
     # generate next move randomly by choosing uniformly from the not visited legal moves
@@ -157,9 +153,6 @@ def randomWalk(board,start):
         nextmove = choice(moveCandidates)
         board.moveKnight(nextmove)
     return board.knightWalk
-    #print("Resulting path:")
-    #board.printBoard()
-    #input("Enter anything to return back to the menu ")
 
 # have to fix so that it actually checks if it's a valid knight path, it's pretty ez
 def inputWalk(board,showValidMoves = 'n'):
@@ -195,17 +188,9 @@ def inputWalk(board,showValidMoves = 'n'):
     
     return board.knightWalk
 
-    #print(board.knightWalk)
-    #print("-"*40)
-    #print("Your path:")
-    #print(", ".join([f"{i+1}.{coordsToSquare(board.knightWalk[i])}" for i in range(numberOfSquares)]))
-    #board.printBoard()
-    #input("Enter anything to return back to the menu ")
-
-
 
 # this algorithm is called Warnsdorff's algorithm and it's actually just a heuristic
-# that often works. 
+# that often works.
 def completeWalk(board,start):
 
     foundWalk = False
@@ -241,7 +226,6 @@ def completeWalk(board,start):
             foundWalk = True
 
     return board.knightWalk
-
 
 menu()
 
