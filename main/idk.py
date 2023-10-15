@@ -137,10 +137,12 @@ def menu():
         
         startingSquare = getStartingSquare(board)
         walk = completeWalk(board,startingSquare)
-        print(walk)
     
     elif choice == "q":
         print("-"*7+"Exiting out of the program"+"-"*7)
+    
+    return walk
+
 
 def randomWalk(board,start): 
     # generate next move randomly by choosing uniformly from the not visited legal moves
@@ -154,15 +156,12 @@ def randomWalk(board,start):
         board.moveKnight(nextmove)
     return board.knightWalk
 
-# have to fix so that it actually checks if it's a valid knight path, it's pretty ez
 def inputWalk(board,showValidMoves = 'n'):
     # change so that they start by specifying the starting square
     # and then the number of moves (0 <= moves <= 63)
     validInput = False
     while not validInput:
-        numberOfSquares = input("Enter the number of squares in your walk (or q to quit to menu): ")
-        if numberOfSquares == "q":
-            return
+        numberOfSquares = input("Enter the number of squares in your walk: ")
         try:
             numberOfSquares = int(numberOfSquares)
         except Exception:
@@ -173,7 +172,7 @@ def inputWalk(board,showValidMoves = 'n'):
         else:
             print("Invalid input, try again")
    
-    getStartingSquare(board)
+    board.setKnightPos(getStartingSquare(board))
 
     # loop through to get the rest of the squares
     for squareNumber in range(2,numberOfSquares+1):
@@ -183,7 +182,6 @@ def inputWalk(board,showValidMoves = 'n'):
         while not validInput:
             nextSquare = input(f"Enter square number {squareNumber} of your walk: ")
             validInput = validSquareInput(nextSquare)
-            
             validInput = board.moveKnight(squareToCoords(nextSquare))
     
     return board.knightWalk
@@ -227,5 +225,5 @@ def completeWalk(board,start):
 
     return board.knightWalk
 
-menu()
+#menu()
 
