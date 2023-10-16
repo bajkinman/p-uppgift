@@ -24,10 +24,10 @@ class Knightwalk:
     def __init__(self,walk,board):
         self.movenumber = 1 # this one is 1-indexed ig
         self.walk = walk
-        x = SQUARE_SIZE*walk[0][0]+PAD
-        y = SQUARE_SIZE*(7-walk[0][1])+PAD
+        x = SQUARE_SIZE*(0.5+walk[0][0])+PAD
+        y = SQUARE_SIZE*(7.5-walk[0][1])+PAD
         self.canvas = board
-        self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+        self.knightIcon = self.canvas.create_image(x,y,anchor=CENTER,image=knightImg)
         self.numberIcons = []
 
     def CurrSquare(self):
@@ -43,11 +43,11 @@ class Knightwalk:
         newSquare = self.CurrSquare()
         oldx = SQUARE_SIZE*(0.5+oldSquare[0])+PAD
         oldy = SQUARE_SIZE*(7.5-oldSquare[1])+PAD
-        x = SQUARE_SIZE*newSquare[0]+PAD
-        y = SQUARE_SIZE*(7-newSquare[1])+PAD
+        newx = SQUARE_SIZE*(0.5+newSquare[0])+PAD
+        newy = SQUARE_SIZE*(7.5-newSquare[1])+PAD
         
         self.canvas.delete(self.knightIcon)
-        self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+        self.knightIcon = self.canvas.create_image(newx,newy,anchor=CENTER,image=knightImg)
         textIcon = self.canvas.create_text(oldx,oldy,anchor=CENTER,text=f"{self.movenumber-1}",font=("Helvetica 20 bold"))
         self.numberIcons.append(textIcon)
 
@@ -59,13 +59,11 @@ class Knightwalk:
         oldSquare = self.CurrSquare()
         self.movenumber -= 1
         newSquare = self.CurrSquare()
-        oldx = SQUARE_SIZE*(0.5+oldSquare[0])+PAD
-        oldy = SQUARE_SIZE*(7.5-oldSquare[1])+PAD
-        x = SQUARE_SIZE*newSquare[0]+PAD
-        y = SQUARE_SIZE*(7-newSquare[1])+PAD
+        newx = SQUARE_SIZE*(0.5+newSquare[0])+PAD
+        newy = SQUARE_SIZE*(7.5-newSquare[1])+PAD
         
         self.canvas.delete(self.knightIcon)
-        self.knightIcon = self.canvas.create_image(x,y,anchor=NW,image=knightImg)
+        self.knightIcon = self.canvas.create_image(newx,newy,anchor=CENTER,image=knightImg)
         self.canvas.delete(self.numberIcons[-1])
         self.numberIcons.pop()
 
