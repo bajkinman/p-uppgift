@@ -296,6 +296,7 @@ def menu():
     return walk
 
 # nu följer de tre valen: slumpmässig vandring, egeninmatad vandring, och komplett vandring
+# var och en av dessa returnerar en lista, som är rutorna i den genererade springarvandringen.
 
 # generera nästa drag genom att slumpmässigt välja bland de tillåtna samt ej besökta rutorna
 # vandringen slutar när ingen obesökt tillåten ruta finns
@@ -309,7 +310,7 @@ def randomWalk(board,start):
         board.moveKnight(nextmove)
     return board.knightWalk
 
-
+# nästa drag genereras genom att användaren skriver in en schackruta, som omvandlas till koordinater
 def inputWalk(board,showValidMoves = 'n'):
     # kontrollera att antalet rutor är rimligt för en springarvandring
     validInput = False
@@ -323,7 +324,8 @@ def inputWalk(board,showValidMoves = 'n'):
         if 1 <= int(numberOfSquares) <= 64:
                 validInput = True
         else:
-            print("Ogiltig indata, försök igen")
+            print("Ogiltig indata, försök igen. Antalet rutor måste vara")
+            print("ett heltal mellan 1 och 64")
    
     board.setKnightPos(getStartingSquare(board))
 
@@ -333,7 +335,7 @@ def inputWalk(board,showValidMoves = 'n'):
             print("Tillgängliga rutor:",*[coordsToSquare(square) for square in board.notVisitedMoves()])
         validInput = False
         while not validInput:
-            nextSquare = input(f"Ange ruta nummer {squareNumber} av din vandring: ")
+            nextSquare = input(f"Ange ruta nummer {squareNumber} i din vandring: ")
             validInput = validSquareInput(nextSquare)
             validInput = board.moveKnight(squareToCoords(nextSquare))
     
@@ -359,7 +361,7 @@ def completeWalk(board,start):
             shuffle(moves)
             # loopa igenom tillåtna drag, flytta springaren till varje "kandidatruta" och se därifrån
             # hur många rutor den kan gå till. Warnsdorffs algoritms säger att välja den
-            # kandidatrutan som tillåter minst antal olika drag
+            # kandidatrutan som tillåter minst antal olika drag i följande drag
             for move in moves:
                 board.moveKnight(move)
                 childMoves = len(board.notVisitedMoves())-1
