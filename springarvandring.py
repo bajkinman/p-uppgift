@@ -18,10 +18,10 @@ imgPath = os.path.join("pictures","icon.png") # springarens ikon, den har samma 
 # hålla koll på springarens position under generering av vandring
 class Board:
     def __init__(self):
-        self.xpos = -1
-        self.ypos = -1
-        self.visited = [[False for _ in range(8)] for _ in range(8)]
-        self.knightWalk = []
+        self.xpos = -1 # springarens x-koordinat
+        self.ypos = -1 # springarens y-koordinat
+        self.visited = [[False for _ in range(8)] for _ in range(8)] #True om springaren har besökt den rutan, annars False
+        self.knightWalk = [] # listan som innehåller de rutor som springaren besöker i sin vandring
 
     def setKnightPos(self,square):
         self.xpos = square[0]
@@ -35,7 +35,7 @@ class Board:
         self.ypos = -1
         self.knightWalk = []
 
-    def legalMoves(self):
+    def legalMoves(self): #kollar för varje drag om den resulterande rutan har x- och y-koordinat mellan 0 och 7
         legal = [] 
         moves = [(2,1),(1,2),(-1,2),(-2,1),(-2,-1),(-1,-2),(1,-2),(2,-1)]
         for x,y in moves:
@@ -43,14 +43,14 @@ class Board:
                 legal.append((self.xpos+x,self.ypos+y))
         return legal
 
-    def notVisitedMoves(self):
+    def notVisitedMoves(self): # loopar igenom legalMoves och kollar om rutan redan är besökt
         available = []
         for x,y in self.legalMoves():
             if not self.visited[y][x]:
                 available.append((x,y))
         return available
     
-    def moveKnight(self,square):
+    def moveKnight(self,square): # uppdatera position, märk ny pos som besökt, lägg till ny pos i vandringen
         if square not in self.legalMoves():
             print("Ej tillåtet drag, försök igen")
             return False
@@ -65,7 +65,7 @@ class Board:
         self.knightWalk.append((self.xpos,self.ypos))
         return True
 
-    def undoLastMove(self):
+    def undoLastMove(self): # kolla längst bak i knightWalk och ta bort den rutan, samt flytta tillbaka springaren
         xremove,yremove = self.knightWalk.pop()
         self.visited[yremove][xremove] = False
         self.xpos,self.ypos = self.knightWalk[-1]
@@ -77,13 +77,13 @@ class Board:
 class Knightwalk:
     def __init__(self,walk,board):
         self.movenumber = 1 # notera 1-indexering
-        self.walk = walk
+        self.walk = walk #själva vandringen, denna är bara en lista med rutor
         x = SQUARE_SIZE*(0.5+walk[0][0])+PAD
         y = SQUARE_SIZE*(7.5-walk[0][1])+PAD
-        self.canvas = board
+        self.canvas = board # brädet som allt ska visas på
         self.knightImg = PhotoImage(file=imgPath)
-        self.knightIcon = self.canvas.create_image(x,y,anchor=CENTER,image=self.knightImg)
-        self.numberIcons = []
+        self.knightIcon = self.canvas.create_image(x,y,anchor=CENTER,image=self.knightImg) # springarens ikon på brädet
+        self.numberIcons = [] # siffrorna som dyker upp på rutor som vi tidigare har besökt
 
     def CurrSquare(self):
         return self.walk[self.movenumber-1]
@@ -108,7 +108,7 @@ class Knightwalk:
         textIcon = self.canvas.create_text(oldx,oldy,anchor=CENTER,text=f"{self.movenumber-1}",font=("Helvetica 20 bold"))
         self.numberIcons.append(textIcon)
 
-    def moveBackward(self):
+    def moveBackward(self): # i princip tvärt om mot moveForward
         if self.movenumber == 1:
             return # vi ska inte få gå bakåt
 
@@ -129,20 +129,23 @@ class Knightwalk:
 # vandringen består av. Ett Movelist-objekt skapas i __init__ av Graphics-klassen
 class Movelist:
     def __init__(self,knightwalk,frame):
-        self.knightwalk = knightwalk
-        self.movelabels = []
-        self.movelistframe = frame
-        for i in range(4):
+        self.knightwalk = knightwalk # springarvandringen
+        self.movelabels = [] # en lista som innehåller rutorna i vandringen, fast som schackkoordinater i en tkinter label
+        self.movelistframe = frame # ramen där Movelist finns
+        for i in range(4): # listan består av 4 kolumner med 16 rader (såklart färre om vandringen är kortare än 64 rutor)
             for j in range(16):
                 self.movelabels.append(Label(self.movelistframe,text="     "))
                 self.movelabels[16*i+j].grid(row=j,column=i,padx=2)
+        
+        # här får varje label en liten ram: alla ramar får bakgrundsfärgen förutom den nuvarande rutan (ruta 0),
+        # som får färgen röd. Detta så att vi kan se var i vandringen vi är
         for i in range(len(knightwalk.walk)):
             coords = self.knightwalk.walk[i]
             self.movelabels[i].config(text=f"{i+1}. {coordsToSquare(coords)}")
             self.movelabels[i].config(highlightbackground=BG_COLOUR,highlightthickness=1.5)
         self.movelabels[self.knightwalk.movenumber-1].config(highlightbackground="red",highlightthickness=1.5)
     
-    def showCurrMove(self):
+    def showCurrMove(self): # se kommentaren ovan, men här är det nuvarande draget istället knightwalk.movenumber-1
         for i in range(64):
             if i == self.knightwalk.movenumber-1:
                 colour="red"
@@ -167,11 +170,11 @@ class Graphics:
         # boardcanvas är där brädets rutor och springaren visas och uppdateras
         self.boardcanvas = Canvas(self.leftframe,width=BOARD_DIM,height=BOARD_DIM)
         self.boardcanvas.pack(padx=(PAD,PAD),pady=(PAD,PAD))
-        for i in range(8):
+        for i in range(8): # skapa siffrorna 1-8 längs raderna och bokstäverna a-h längs kolumnerna, som på ett schackbräde
             self.boardcanvas.create_text((PAD/2,SQUARE_SIZE*(i+0.5)+PAD),text=str(8-i),anchor=CENTER)
             self.boardcanvas.create_text((SQUARE_SIZE*(i+0.5)+PAD,BOARD_DIM-PAD/2),text=chr(97+i),anchor=CENTER)
 
-        for i in range(8):
+        for i in range(8): # skapa 8x8 rutor, varannan får ljus färg och varannan mörk färg
             for j in range(8):
                 x1 = PAD+SQUARE_SIZE*i
                 y1 = PAD+SQUARE_SIZE*j
@@ -202,9 +205,9 @@ class Graphics:
         # ramen som innehåller de två knapparna
         self.bottomframe = Frame(self.leftframe)
         self.bottomframe.pack(side="bottom")
-        self.prevMoveButton = Button(self.bottomframe, text="<-", command=lambda: self.moveBackwardFn())
+        self.prevMoveButton = Button(self.bottomframe, text="<-", command=self.moveBackwardFn)
         self.prevMoveButton.pack(side="left")
-        self.nextMoveButton = Button(self.bottomframe, text="->", command=lambda: self.moveForwardFn())
+        self.nextMoveButton = Button(self.bottomframe, text="->", command=self.moveForwardFn)
         self.nextMoveButton.pack(side="left")
         
         # vänster- och högerpilen binds till samma funktion som de två knapparna
@@ -212,7 +215,8 @@ class Graphics:
         self.root.bind("<Right>", lambda event: self.moveForwardFn())
 
         self.root.mainloop()
-
+    
+    # funktioner för att grafiskt behandla drag finns redan i Knightwalk och Movelist: i Graphics behöver vi bara sätta ihop dem
     def moveBackwardFn(self):
         self.knightWalk.moveBackward()
         self.moveList.showCurrMove()
